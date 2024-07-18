@@ -1,34 +1,33 @@
-import React from "react"
-import Die from "./Die"
-import {nanoid} from "nanoid"
-import Confetti from "react-confetti"
-import Score from "./Score"
+import React from "react";
+import Die from "./Die";
+import { nanoid } from "nanoid";
+import Confetti from "react-confetti";
+import Score from "./Score";
 import Scoreboard from "./Scoreboard";
 
 export default function App() {
-
     const [score, setScore] = React.useState(0);
-    const [dice, setDice] = React.useState(allNewDice())
-    const [tenzies, setTenzies] = React.useState(false)
+    const [dice, setDice] = React.useState(allNewDice());
+    const [tenzies, setTenzies] = React.useState(false);
     const [bestScores, setBestScores] = React.useState(
         localStorage.getItem("bestScores") ?
-            JSON.parse(localStorage.getItem("bestScores")) : [])
+            JSON.parse(localStorage.getItem("bestScores")) : []);
 
     React.useEffect(() => {
-        const allHeld = dice.every(die => die.isHeld)
-        const firstValue = dice[0].value
-        const allSameValue = dice.every(die => die.value === firstValue)
+        const allHeld = dice.every(die => die.isHeld);
+        const firstValue = dice[0].value;
+        const allSameValue = dice.every(die => die.value === firstValue);
         if (allHeld && allSameValue) {
-            setTenzies(true)
+            setTenzies(true);
             setBestScores(prevBestScores => {
                 const newBestScores = [...prevBestScores, score].sort((a, b) => a - b);
                 return newBestScores.slice(0, 5);
-            })
+            });
         }
-    }, [dice, score])
+    }, [dice, score]);
 
     React.useEffect(() => {
-        localStorage.setItem('bestScores', JSON.stringify(bestScores.slice(0, 5)))
+        localStorage.setItem('bestScores', JSON.stringify(bestScores.slice(0, 5)));
     }, [bestScores]);
 
     function generateNewDie() {
@@ -36,17 +35,16 @@ export default function App() {
             value: Math.ceil(Math.random() * 6),
             isHeld: false,
             id: nanoid()
-        }
+        };
     }
 
     function allNewDice() {
-        const newDice = []
+        const newDice = [];
         for (let i = 0; i < 10; i++) {
-            newDice.push(generateNewDie())
+            newDice.push(generateNewDie());
         }
-        return newDice
+        return newDice;
     }
-
 
     function rollDice() {
         if (tenzies) {
@@ -54,21 +52,21 @@ export default function App() {
             setDice(allNewDice());
             setScore(0);
         } else {
-            setScore(prevScore => prevScore + 1)
+            setScore(prevScore => prevScore + 1);
             setDice(oldDice => oldDice.map(die => {
                 return die.isHeld ?
                     die :
-                    generateNewDie()
-            }))
+                    generateNewDie();
+            }));
         }
     }
 
     function holdDice(id) {
         setDice(oldDice => oldDice.map(die => {
             return die.id === id ?
-                {...die, isHeld: !die.isHeld} :
-                die
-        }))
+                { ...die, isHeld: !die.isHeld } :
+                die;
+        }));
     }
 
     const diceElements = dice.map(die => (
@@ -78,32 +76,29 @@ export default function App() {
             isHeld={die.isHeld}
             holdDice={() => holdDice(die.id)}
         />
-    ))
+    ));
 
     return (
         <main>
-            {tenzies && <Confetti/>}
-            <h1 className="title">Tenzies</h1><br/>
+            {tenzies && <Confetti />}
+            <h1 className="title">Tenzies</h1><br />
             <p className="instructions">Roll until all dice are the same. Click each die to freeze it at its current
                 value between rolls.</p>
-            <Score score={score}/>
+            <Score score={score} />
             <div className="main-container">
-            <div className="content-container">
-                <div className="dice-container">
-                    {diceElements}
+                <div className="content-container">
+                    <div className="dice-container">
+                        {diceElements}
+                    </div>
+                    <button
+                        className="roll-dice"
+                        onClick={rollDice}
+                    >
+                        {tenzies ? "New Game" : "Roll"}
+                    </button>
                 </div>
-                <button
-                    className="roll-dice"
-                    onClick={rollDice}
-                >
-                    {tenzies ? "New Game" : "Roll"}
-                </button>
-            </div>
-            {/*<div className="scoreboard-container">*/}
-            {/*    <Scoreboard scores={bestScores}/>*/}
-            {/*</div>*/}
+                <Scoreboard scores={bestScores} />
             </div>
         </main>
-
-    )
+    );
 }
